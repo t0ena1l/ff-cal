@@ -20,7 +20,6 @@ const ICON = { High: "", Medium: "", Low: "", Holiday: "" };
 const EVENT_MINUTES = 60;
 const ALERTS = [
   { minutes: 1440, label: "1 day before" },  // 24h = 1440 minutes
-  { minutes: 60,   label: "60 min before" },
   { minutes: 10,    label: "10 min before" },
 ];
 
