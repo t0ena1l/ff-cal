@@ -13,10 +13,7 @@ import { writeFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const SOURCES = [
-  "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
-  "https://nfs.faireconomy.media/ff_calendar_nextweek.json",
-];
+const SOURCE = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
 const CURRENCIES = ["USD"];
 const IMPACTS = ["High"];
 const ICON = { High: "", Medium: "", Low: "", Holiday: "" };
@@ -118,32 +115,15 @@ async function fetchWithRetry(url, attempts = 3) {
 
 async function main() {
   const out = process.argv[2] || "docs/usd.ics";
-
-  // Fetch all feeds concurrently; fail hard if ANY feed errors,
-  // so we never overwrite the published calendar with partial data.
-  const results = await Promise.all(SOURCES.map((url) => fetchWithRetry(url)));
-  const all = results.flat();
-
-  if (!Array.isArray(all) || all.length === 0) {
+  const events = await fetchWithRetry(SOURCE);
+  if (!Array.isArray(events) || events.length === 0) {
     throw new Error("Upstream returned no events; refusing to overwrite calendar");
   }
-
-  // Dedupe: feeds overlap around week boundaries, and uid() is
-  // deterministic (same event -> same UID), so a Set is enough.
-  const seen = new Set();
-  const events = all.filter((e) => {
-    if (!e || typeof e.date !== "string") return false;
-    const key = uid(e, new Date(e.date));
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
   const filtered = filterEvents(events);
   const ics = buildICS(filtered, `FF ${CURRENCIES.join("/")} · ${IMPACTS.join(" + ")}`);
   await mkdir(dirname(out), { recursive: true });
   await writeFile(out, ics, "utf8");
-  console.log(`Wrote ${filtered.length} of ${events.length} events (after dedupe) to ${out}`);
+  console.log(`Wrote ${filtered.length} of ${events.length} events to ${out}`);
 }
 
 // --- helpers ---------------------------------------------------------------
