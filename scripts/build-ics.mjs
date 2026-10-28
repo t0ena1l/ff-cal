@@ -18,7 +18,11 @@ const CURRENCIES = ["USD"];
 const IMPACTS = ["High", "Medium"];
 const ICON = { High: "🔴", Medium: "🟠", Low: "🟡", Holiday: "🏦" };
 const EVENT_MINUTES = 15;
-const ALERT_MINUTES = 10;
+const ALERTS = [
+  { minutes: 1440, label: "1 day before" },  // 24h = 1440 minutes
+  { minutes: 60,   label: "60 min before" },
+  { minutes: 10,    label: "10 min before" },
+];
 
 export function filterEvents(events, currencies = CURRENCIES, impacts = IMPACTS) {
   return events.filter(
@@ -70,17 +74,18 @@ export function buildICS(events, calName) {
       `SUMMARY:${esc(`${ICON[e.impact] || ""} ${e.country} ${e.title}`.trim())}`,
       `DESCRIPTION:${esc(details.join("\n"))}`
     );
-
-    if (e.impact === "High") {
+  
+  if (e.impact === "High") {
+    for (const a of ALERTS) {
       lines.push(
         "BEGIN:VALARM",
         "ACTION:DISPLAY",
-        `DESCRIPTION:${esc(`${e.country} ${e.title}`)}`,
-        `TRIGGER:-PT${ALERT_MINUTES}M`,
+        `DESCRIPTION:${esc(`${a.label} — ${e.country} ${e.title}`)}`,
+        `TRIGGER:-PT${a.minutes}M`,
         "END:VALARM"
       );
     }
-
+  }
     lines.push("END:VEVENT");
   }
 
