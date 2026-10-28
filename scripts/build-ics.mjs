@@ -15,7 +15,7 @@ import { pathToFileURL } from "node:url";
 
 const SOURCE = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
 const CURRENCIES = ["USD"];
-const IMPACTS = ["High", "Medium"];
+const IMPACTS = ["High"];
 const ICON = { High: "🔴", Medium: "🟠", Low: "🟡", Holiday: "🏦" };
 const EVENT_MINUTES = 15;
 const ALERTS = [
